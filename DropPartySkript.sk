@@ -1,0 +1,287 @@
+# Drop Party Skript!
+# Created by: Kyle [Pinguin]
+# This skript is a free resource, however feel free to donate if you wish!
+# https://Paypal.Me/GameDev
+# Tutorial Video: https://www.youtube.com/watch?v=_d8EL9zJDUQ
+
+options:
+	# Change these to 1 when setting up, afterwards change to 0
+	canEditDroppers: 1
+	canAddDonationChests: 1
+	canAddButton: 1
+	
+	# Server Broadcast Prefix
+	prefix : &7[&4Mineworld&7]&f
+	
+	# Locations for the drop party and donations area
+	dpWarpLocation: /Warp DP
+	dpDonationLocation: /Warp DPDonations
+	
+	# Broadcast messages for the start and ending of dp
+	dpStartingMessage: Please No Flying During DP! Temp Bans may be given if caught flying...
+	endDPMessage: Drop Party Has Ended! Thank you for playing! Remember to /vote
+	
+	# Permission Nodes
+	dpAdminPermission: dp.admin
+	dpStartPermission: dp.start
+	
+	# How long do you want the drop party to last for?
+	howLongToDrop: 70
+	
+variables:
+	{dpButton} = ""
+	{dpItemList::*} = ""
+	{dpDropersList::*} = ""
+	{isDPStarted} = 0
+	{dpDonationsChest} = ""
+	
+				
+			
+command /dpdebug:
+	permission: {@dpAdminPermission}
+	trigger:
+		set {_dropperCount} to size of {dpDropersList::*}
+		message "Dropper Count: %{_dropperCount}%"
+	
+	
+command /dpbroadcast [<integer>] [<text>]:
+	# /dpbroadcast {minutes} {location} [Right now only supports 1 location]
+	trigger:
+		if player is not set:
+			if argument-1 is set:
+				if argument-2 is set:
+					if argument-2 is "dp":
+						set {_timeLeft} to argument-1
+						while {_timeLeft} is greater than 1:
+							if {_timeLeft} is less than 4:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes @ {@dpWarpLocation}"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 4:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								broadcast "{@prefix} Donate items to the DP @ {@dpDonationLocation}"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 5:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 10:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 15:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 20:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 30:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else if {_timeLeft} is 45:
+								broadcast "{@prefix} Drop Party Starting in %{_timeLeft}% Minutes"
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+							else:
+								wait 1 minutes
+								set {_timeLeft} to {_timeLeft} - 1
+						wait 2 seconds
+						broadcast "{@prefix} Drop Party Is Starting At {@dpWarpLocation}"
+						wait 2 seconds
+						broadcast "{@prefix} Drop Party Is Starting At {@dpWarpLocation}"
+						wait 2 seconds
+						broadcast "{@prefix} Drop Party Is Starting At {@dpWarpLocation}"
+						wait 10 seconds
+						broadcast "{@prefix} Filling Dispensers!"
+						execute console command "filldp"
+						wait 15 seconds
+						broadcast "{@prefix} Drop Party Is Starting At "
+						wait 15 seconds
+						broadcast "{@prefix} {@dpStartingMessage}"
+						wait 15 seconds
+						broadcast "{@prefix} Drop Party Starting in 3..."
+						wait 1 second
+						broadcast "{@prefix} Drop Party Starting in 2..."
+						wait 1 second
+						broadcast "{@prefix} Drop Party Starting in 1..."
+						wait 1 second
+						broadcast "{@prefix} Drop Party Starting NOW!!! GLHF!!"
+						execute console command "droppartybuttonpusher {@howLongToDrop}"
+	
+
+command /dpdonationchest [<text>]:
+	permission: {@dpAdminPermission}
+	trigger:
+		if argument is "clear":
+			clear {dpDonationsChest}
+			message "Removed DP Donations Chest"
+		else if argument is "test":
+			loop all items in {dpDonationsChest}'s inventory:
+				message "%loop-item%"
+				remove 1 of loop-item from {dpDonationsChest}'s inventory
+	
+command /setdroppartyitem [<text>]:
+	permission: {@dpAdminPermission}
+	trigger:
+		if argument is set:
+			if argument is "clear":
+				message "Cleared Drop Party Item List"
+				clear {dpItemList::*}
+			else if argument is "list":
+				message "%{dpItemList::*}%"
+			else if argument is "give":
+				message "Giving: %{dpItemList::3}%"
+				add {dpItemList::3} to player's inventory
+		else:
+			set {_item} to player's tool
+			add {_item} to {dpItemList::*}
+			message "Added %{_item}%"
+			remove {_item} from the player
+				
+command /setdroppartydroper [<text>]:
+	permission: {@dpAdminPermission}
+	trigger:
+		if argument is set:
+			if argument is "clear":
+				message "Cleared Drop Party Dropper List"
+				clear {dpDropersList::*}
+			else if argument is "list":
+				message "There are a total of %size of {dpDropersList::*}% droppers"
+			else if argument is "add":
+				set {_randomItem} to random element out of {dpItemList::*}
+				add {_randomItem} to {dpDropersList::1}'s inventory
+			else if argument is "emptyall":
+				loop {dpDropersList::*}:
+					if loop-value's inventory is empty:
+						message "already empty"
+					else:
+						clear loop-value's inventory
+						message "cleared a dropper"
+			else if argument is "testall":
+				message "testing..."
+				toggle {dpButton}
+				wait 1 second
+				toggle {dpButton}
+
+command /startdp [<integer>]:
+	permission: {@dpStartPermission}
+	trigger:
+		if argument is set:
+			if {isDPStarted} is 0:
+				message "Starting DP in %argument% Minutes!"
+				execute console command "dpbroadcast %argument% dp"
+				set {isDPStarted} to 1
+			else:
+				message "Drop Party Skript Already Started..."
+		else if player is not set:
+			if argument is set:
+				if {isDPStarted} is 0:
+					execute console command "dpbroadcast %argument% dp"
+					set {isDPStarted} to 1
+					
+command /forceenddp:
+	permission: {@dpStartPermission}
+	trigger:
+		if {isDPStarted} is 1:
+			message "Force ending DP!"
+			set {isDPStarted} to 0
+		else:
+			message "Drop Party Skript is not running..."
+				
+command /filldp:
+	trigger:
+		if player is not set:
+			set {_itemsGrabbedFromDonationChest} to 0
+			loop {dpDropersList::*}:
+				set {_numofitems} to a random integer between 2 and 9
+				set {_itemCount} to 0
+				while {_itemCount} is less than {_numofitems}:
+					set {_rewardGrabber} to a random integer between 0 and 4
+					
+					if {_rewardGrabber} is 1:
+						set {_randomItem} to random element out of {dpItemList::*}
+					else if {_rewardGrabber} is greater than 2:
+						clear {_dpDonationItems::*}
+						
+						loop all items in {dpDonationsChest}'s inventory:
+							add loop-item to {_dpDonationItems::*}
+							
+						set {_randomItem} to random element out of {_dpDonationItems::*}
+						set {_randomItemCount} to a random integer between 0 and 16
+						remove {_randomItemCount} of {_randomItem} from {dpDonationsChest}'s inventory
+						
+						set {_itemsGrabbedFromDonationChest} to {_itemsGrabbedFromDonationChest} + {_randomItemCount}
+					
+					add {_randomItem} to loop-value's inventory
+					set {_itemCount} to {_itemCount} + 1
+				wait 1 second
+			broadcast "{@prefix} Loaded DP With %{_itemsGrabbedFromDonationChest}% items from DP Donations Chest found at {@dpDonationLocation}"
+			wait 1 second
+
+command /droppartybuttonpusher [<integer>]:
+	trigger:
+		if player is not set:
+			if argument is not set:
+				message "Pushing Button"
+				toggle {dpButton}
+				wait 1 second
+				toggle {dpButton}
+			else:
+				set {_looped} to 0
+
+				wait 3 seconds
+				while {_looped} is less than argument:
+					toggle {dpButton}
+					wait 1 second
+					toggle {dpButton}
+					wait 3 seconds
+					set {_looped} to {_looped} + 1
+				wait 5 seconds
+
+				broadcast "{@prefix} {@endDPMessage}"
+				
+				loop {dpDropersList::*}:
+					clear loop-value's inventory
+				
+				set {isDPStarted} to 0
+
+	
+command /testdropbutton [<integer>]:
+	permission: {@dpAdminPermission}
+	trigger:
+		if argument is not set:
+			message "Pushing Button"
+			toggle {dpButton}
+			wait 1 second
+			toggle {dpButton}
+		else:
+			set {_looped} to 0
+			while {_looped} is less than argument:
+				toggle {dpButton}
+				wait 1 second
+				toggle {dpButton}
+				wait 3 seconds
+				set {_looped} to {_looped} + 1
+			
+on rightclick holding a diamond hoe:
+	if player has permission "{@dpAdminPermission}":
+		if {@canEditDroppers} is 1:
+			set {_targBlock} to targeted block
+			if targeted block is button:
+				if {@canAddButton} is 1:
+					clear {dpButton}
+					set {dpButton} to targeted block
+					message "Button Set"
+			
+			if targeted block is chest:
+				clear {dpDonationsChest}
+				set {dpDonationsChest} to targeted block
+				message "Donations Chest Set"
+			
+			if targeted block is Dispenser:
+				message "Adding Dispenser to Dropper List"
+				add {_targBlock} to {dpDropersList::*}
